@@ -1,6 +1,7 @@
 Feature Importance analysis was done to identify relevant features contributing to the prediction models and the result Confusion Matrices are attached in this folder.
 
 |Feature	         |   Contribution In Classification (%)|
+|||
 |RESOURCE	         | 5.808|
 |------------------|-------------------------------------|
 |MGR_ID	           | 8.09|
