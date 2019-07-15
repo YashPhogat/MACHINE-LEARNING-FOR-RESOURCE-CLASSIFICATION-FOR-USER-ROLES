@@ -1,0 +1,41 @@
+str(train)
+str(test)
+str(trainset)
+str(workset)
+str(testset)
+utils:::menuInstallPkgs()
+library(e1071)
+
+#best tune svm kernel
+
+best.tune(svm, train.x = as.matrix(workset[, -1]), train.y = as.factor(workset$ACTION),     type = "C-classification", data = testset, kernel = "radial")
+svm.model<-svm(ACTION~.,data=workset,kernel="radial",cost=1,gamma=0.1111)
+pred<-predict(svm.model,testset[,-1])
+
+#Weighted SVM
+
+
+svm.model<-svm(ACTION~.,data=workset,kernel="radial",cost=1,gamma=0.1111,class.weights=c(`0`=94, `1`=6))
+pred_svm_weighted<-predict(svm.model,testset[,-1])
+
+#SMOTED Decision tree
+
+library(caret)
+library(rpart)
+
+newdata<-SMOTE(ACTION~.,workset,perc.over=200, perc.under=100)
+library(DMwR)
+
+workset$ACTION<-as.factor(workset$ACTION)
+newdata<-SMOTE(ACT ~ .,workset, perc.over = 100, perc.under = 200)
+newDATA <- SMOTE(ACTION ~ ., workset, perc.over = 100, perc.under=200)
+dec_model<-rpart(ACTION~., data=newDATA, method="class" )
+dec_pred<-predict(dec_model, testset[,-1])
+
+# random FOrest
+
+
+library(randomForest)
+newRF_pred<-randomForest(ACTION~., workset, ntrees=400)
+rf_model<-randomForest(ACTION~., workset, ntrees=400)
+newRF_pred<-predict(rf_model,testset[,-1])

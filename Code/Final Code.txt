@@ -1,0 +1,218 @@
+/*workset and testset are 80:20 samples from train.csv for learning and verification respectively. */
+
+
+
+#ON LOCAL DATA
+
+
+str(train)
+str(test)
+str(trainset)
+str(workset)
+str(testset)
+utils:::menuInstallPkgs()
+library(e1071)
+
+#best tune svm kernel
+
+best.tune(svm, train.x = as.matrix(workset[, -1]), train.y = as.factor(workset$ACTION),     type = "C-classification", data = testset, kernel = "radial")
+svm.model<-svm(ACTION~.,data=workset,kernel="radial",cost=1,gamma=0.1111)
+pred<-predict(svm.model,testset[,-1])
+
+#Weighted SVM
+
+
+svm.model<-svm(ACTION~.,data=workset,kernel="radial",cost=1,gamma=0.1111,class.weights=c(`0`=94, `1`=6))
+pred_svm_weighted<-predict(svm.model,testset[,-1])
+
+#SMOTED Decision tree
+
+library(caret)
+library(rpart)
+
+newdata<-SMOTE(ACTION~.,workset,perc.over=200, perc.under=100)
+library(DMwR)
+
+workset$ACTION<-as.factor(workset$ACTION)
+newdata<-SMOTE(ACT ~ .,workset, perc.over = 100, perc.under = 200)
+newDATA <- SMOTE(ACTION ~ ., workset, perc.over = 100, perc.under=200)
+dec_model<-rpart(ACTION~., data=newDATA, method="class" )
+dec_pred<-predict(dec_model, testset[,-1])
+
+# random Forest
+
+
+library(randomForest)
+newRF_pred<-randomForest(ACTION~., workset, ntrees=400)
+rf_model<-randomForest(ACTION~., workset, ntrees=400)
+newRF_pred<-predict(rf_model,testset[,-1])
+
+
+
+Library(Matrix)
+Sparse.matrix<-sparse.model.matrix(ACTION~.-1,data=workset)
+op_vector=workset[,ACTION]=="Marked"
+op_vector=workset[,1]=="Marked"
+head(op_vector)
+str(op_vector)
+bst <- xgboost(data = sparse_matrix,label=op_vector, max_depth = 4, num_parallel_tree = 1000, subsample = 0.5, colsample_bytree =0.5, nrounds = 1, objective = "binary:logistic")
+pred_ohe_rf<-predict(bst,testset[,-1])
+pred_ohe<-predict(bst,testset[,-1])
+summary(bst)
+pred_ohe<-predict(bst,as.matrix(testset[,-1]))
+pred_ohe<-predict(bst,testset[,-1])
+summary(testset)
+str(testset)
+sparse_matrix_test <- sparse.model.matrix(ACTION~.-1, data = testset)
+library(Matrix)
+sparse_matrix_test <- sparse.model.matrix(ACTION~.-1, data = testset)
+pred_ohe<-predict(bst,sparse_matrix_test)
+head(pred_ohe)
+utils:::menuInstallPkgs()
+library(pROC)
+pred_ohe_1<-pred_ohe
+auc(testset[,1],pred_ohe_1)
+auc(testset[,1],pred_ohe)
+new_workset<-data.matrix(workset) 
+bst <- xgboost(data = new_workset[,-1],label=new_workset[,1], max_depth = 2000, num_parallel_tree = 500, subsample = 0.5, colsample_bytree =0.5, nrounds = 15, objective = "binary:logistic")
+pred_ohe<-predict(bst,sparse_matrix_test)
+library(pROC)
+auc(testset[,1],pred_ohe)
+
+#ON TEST DATA
+
+head(test)
+library(Matrix)
+sp_test<-sparse.model.matrix(id~.,data=test)
+head(sp_test)
+sp_test<-sparse.model.matrix(id~.-1,data=test)
+head(sp_test)
+pred_ohe<-predict(bst,sp_test)
+head(pred_ohe)
+auc(testset[,1],pred_ohe)
+answer<-data.frame(id=c(1:nrow(test)))
+head(answer)
+answer<-data.frame(id=c(1:nrow(test)), ACTION=c(0))
+head(answer)
+answer$ACTION<-pred_ohe
+head(answer)
+write.csv(answer,file="submission.csv",row.names=FALSE)
+
+
+#Start of gbm
+
+
+library(gbm)
+utils:::menuInstallPkgs()
+library(gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=500,n.minobsinnode=8,interaction.depth=8,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=500,n.minobsinnode=8,interaction.depth=6,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=400,n.minobsinnode=8,interaction.depth=6,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=400,n.minobsinnode=7,interaction.depth=8,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=500,n.minobsinnode=7,interaction.depth=8,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=500,n.minobsinnode=10,interaction.depth=8,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=500,n.minobsinnode=8,interaction.depth=10,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=300)
+auc(testset[,1],pred_gbm)
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=500)
+auc(testset[,1],pred_gbm)
+gbm_model<-gbm(formula=ACTION~.,shrinkage=1,data=workset,n.trees=500,n.minobsinnode=20,interaction.depth=10,distribution="adaboost")
+pred_gbm<-predict(gbm_model,testset[,-1],n.trees=400)
+auc(testset[,1],pred_gbm)
+
+#GBM on test.csv
+
+
+pred_gbm_on_test<-predict(gbm_model,test[,-1],n.trees=400)
+head(pred_gbm_on_test)
+head(answer)
+answer$ACTION<-pred_gbm_on_test
+head(answer)
+write.csv(answer,file="submission.csv",row.names=FALSE)
+
+#Integrating different approaches (GBM+OHE_RF)
+
+
+new_pred<-(pred_gbm_on_test+7.331)/(19.710+7.331)
+summary(new_pred)
+net<-((pred_ohe*0.88)+(new_pred*0.83))/1.72
+head(net)
+answer$ACTION<-net
+head(answer)
+write.csv(answer,file="submission.csv",row.names=FALSE)
+
+summary(pred)
+str(pred_rf)
+str(pred)
+str(newRF_pred)
+str(rf_pred)
+summary(rf_model)
+
+#redoing random forest for auc plot over trainset and integration (GBM+OHE_RF+RF)
+
+library(randomForest)
+rf_model_full<-randomForest(ACTION~.,data=train,n.trees=400)
+rf_pred<-predict(rf_model_full,test)
+head(rf_pred)
+net<-((pred_ohe*0.88)+(new_pred*0.83)+(rf_pred*0.87))/2.59
+head(net)
+answer$ACTION<-net
+head(answer)
+write.csv(answer,file="submission.csv",row.names=FALSE)
+
+
+pred_gbm<-(pred_gbm+4.367)/(17.520+4.367)
+net<-((pred_ohe_train*0.88)+(pred_gbm*0.83)+(newRF_pred[,1]*0.87))/2.58
+auc(testset[,1],net)
+
+
+
+#Integration (RF+OHE_RF)
+
+net<-((pred_ohe_train*0.88)+(newRF_pred[,1]*0.87))/1.75
+auc(testset[,1],net)
+pred_plot<-plot(roc(testset[,1],net),print.auc=TRUE,col="pink",print.auc.y=0.8,print.auc.x=0.4,add=TRUE)
+
+#Implementing integration to testset
+
+net<-((pred_ohe*0.88)+(rf_pred*0.87))/1.75
+answer$ACTION<-net
+write.csv(answer,file="submission.csv",row.names=FALSE)
+q()
+
+
+#Plotting different auc’s
+
+plot(roc(testset[,1],pred),print.auc=TRUE,col="red",print.auc.y=0.45)
+
+legend("bottomright",c("SVM","Weighted SVM","Decision Tree(SMOTE)","GBM","Random Forest","Encoded Random Forest", "Integrated"),lty=c(1,1,1,1,1,1,1),lwd=c(.5,.5,.5,.5,.5,.5,.5),col=c("red","green","blue","Yellow","Orange","Purple","Pink"))
+
+pred_plot<-plot(roc(testset[,1],as.numeric(pred_svm_weighted)),print.auc=TRUE,col="green",print.auc.y=0.5,add=TRUE)
+
+pred_plot<-plot(roc(testset[,1],as.numeric(dec_pred)),print.auc=TRUE,col="blue",print.auc.y=0.6,add=TRUE)
+
+pred_plot<-plot(roc(testset[,1],pred_gbm),print.auc=TRUE,col="yellow",print.auc.y=0.7,print.auc.x=0.8,add=TRUE)
+
+pred_plot<-plot(roc(testset[,1],newRF_pred[,1]),print.auc=TRUE,col="orange",print.auc.y=0.6,print.auc.x=0.8,add=TRUE)
+
+pred_plot<-plot(roc(testset[,1],pred_ohe_train),print.auc=TRUE,col="purple",print.auc.y=0.7,print.auc.x=0.4,add=TRUE)
+
+pred_plot<-plot(roc(testset[,1],net),print.auc=TRUE,col="pink",print.auc.y=0.8,print.auc.x=0.4,add=TRUE)
+
+net<-((pred_ohe_train*0.88)+(newRF_pred[,1]*0.87))/1.75
+
+pred_plot<-plot(roc(testset[,1],net),print.auc=TRUE,col="pink",print.auc.y=0.8,print.auc.x=0.4,add=TRUE)
